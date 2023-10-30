@@ -1,34 +1,27 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# TODO: Add logging support
 
-
+from logger import logger
 import argparse
 from typing import Tuple, NamedTuple
 import psutil
 import time
+import requests
+from memory_analyzer import MemoryAnalyzer
+from alarmist import Alarmist
 
 
-BYTES_TO_MB_DIVIDER = 1024 ** 2
-SLEEP_INTERVAL_SECONDS = 2
+ALARM_INTERVAL_SECONDS = 10
 
 
-class Proc(NamedTuple):
-    name: str
-    memory_usage: int
 
-# helper functions
-def get_memory_usage_percent() -> int:
-    return int(psutil.virtual_memory().percent)
 
-def get_total_system_memory_mb() -> int:
-    return psutil.virtual_memory().total // BYTES_TO_MB_DIVIDER
 
 
 
 def parse_args() -> Tuple[int, int]:
-    total_memory = get_total_system_memory_mb()
+    total_memory = MemoryAnalyzer.get_total_system_memory_mb()
     parser = argparse.ArgumentParser(
         prog="mem_cons_tool.py",
         formatter_class=argparse.RawTextHelpFormatter,
@@ -46,39 +39,42 @@ def parse_args() -> Tuple[int, int]:
         choices=range(1, total_memory),
         help="Memory usage limit by single process, Mb",
     )
+    # TODO: make choice 1 time or interval
+    parser.add_argument(
+        "-l", "--loop",
+        help=f"If present, makes tool run in loop every {ALARM_INTERVAL_SECONDS}",
+        action="store_true"        
+    )
     args = parser.parse_args()
-    return args.total, args.proc
+    return args.total, args.proc, args.loop
+
+
+
+
 
 
 
 def main() -> None:
-    total_usage_percent, per_proc_usage_mb = parse_args()
-    while True:
-        current_mem_usage_percent = get_memory_usage_percent()
-        if current_mem_usage_percent >= total_usage_percent:
-            print("ALARM: Total nemory usage:", current_mem_usage_percent)
+    total, per_proc, loop = parse_args()
+    
+    ma = MemoryAnalyzer(
+        total_limit_percent=total,
+        per_process_limit_mb=per_proc
+    )
+    
 
-        if per_proc_usage_mb:
-            fat_processes = []
-            for proc in psutil.process_iter():
-                try:
-                    name = proc.name()
-                    usage_mb = proc.memory_info().rss // BYTES_TO_MB_DIVIDER
-                    if usage_mb >= per_proc_usage_mb:
-                        fat_processes.append(
-                            Proc(name, usage_mb)
-                        )
-                except (psutil.NoSuchProcess):
-                    pass
-                    # TODO: log no process exception
-                except (psutil.AccessDenied):
-                    pass
-                    # TODO: log access denied exception
-            for proc in fat_processes:
-                print(f"ALARM: {proc.name} uses {proc.memory_usage} MB")
+
+    while True:
+        current_mem_usage = ma.get_memory_usage_percent()
+        if current_mem_usage >= total:
+            logger.warning(f"Sent alarm - Total nemory usage: {current_mem_usage} %")
+
+        if per_proc:            
+            for proc in ma.get_fat_processes():
+                logger.warning(f"Sent alarm - {proc.name} uses {proc.memory_usage} MB")
 
         
-        time.sleep(SLEEP_INTERVAL_SECONDS)
+        time.sleep(ALARM_INTERVAL_SECONDS)
 
 
 

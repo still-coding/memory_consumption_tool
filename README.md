@@ -37,7 +37,7 @@ To run demo:
 
 * Deploy containers using
 ```shell 
-docker-compose up
+docker compose up
 ```
 * Go to http://localhost:8000/alarms/ to see something like this:
 

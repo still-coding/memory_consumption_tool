@@ -1,0 +1,13 @@
+version: '3'
+services:
+  fake_api:
+    build: fake_api/
+    ports:
+      - 8000:8000
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+
+  monitored:
+    build: monitored/
+    command: ./mem_cons_tool.py -p 1 -t 1 -l
+    depends_on:
+    - fake_api

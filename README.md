@@ -13,8 +13,8 @@ Contains:
 
     Run `./mem_cons_tool.py -h` for available CLI args.
 
-* `.env` file
-
+* `.env_settings`
+    
     Contains tool settings as environment variables
 
 * `mem_cons_tool` - helper package with submodules:

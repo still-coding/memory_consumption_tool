@@ -5,7 +5,7 @@ ENV PYTHONUNBUFFERED 1
 
 WORKDIR /app
 
-COPY requirements.txt mem_cons_tool.py .env ./
+COPY requirements.txt mem_cons_tool.py .env_settings ./
 COPY mem_cons_tool/ ./mem_cons_tool/
 
 

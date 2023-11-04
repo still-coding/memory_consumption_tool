@@ -3,6 +3,19 @@
 Small memory consumption analyzer tool. Sends alarms to REST API on excessive memory usage.
 And some testing environment.
 
+## Quick start
+
+* Deploy containers using
+```shell 
+docker compose up
+```
+* Go to http://localhost:8000/alarms/ to see something like this:
+
+![alarms screenshot](./readme/alarms.png)
+
+
+
+
 ## Repo structure:
 
 ### `monitored` directory
@@ -31,15 +44,6 @@ Contains:
 A tiny FastAPI app for tests and demonstration.
 
 
-### `docker-compose.yaml` for demo purposes
+### `docker-compose.yaml`
 
-To run demo:
-
-* Deploy containers using
-```shell 
-docker compose up
-```
-* Go to http://localhost:8000/alarms/ to see something like this:
-
-![alarms screenshot](./readme/alarms.png)
-
+For demo purposes.
